@@ -1,6 +1,7 @@
 services:
   app:
-    image: ${IMAGE:?}:${TAG:?}
+    build: .
+    image: ${IMAGE:-${COMPOSE_PROJECT_NAME}-app}:${TAG:-latest}
     ports:
       - "3000:3000"
     healthcheck:
@@ -9,3 +10,33 @@ services:
       timeout: 3s
       retries: 10
       start_period: 10s
+    networks:
+      - testnet
+
+  test:
+    build:
+      #context: .
+      dockerfile_inline: |
+        FROM ubuntu:noble
+        RUN mkdir -p /app/tests /tmp
+        #RUN apt-get update && apt-get install -y curl
+        #RUN curl -L https://github.com/Orange-OpenSource/hurl/releases/download/7.1.0/hurl_7.1.0_amd64.deb -o /app/hurl.deb
+        ADD https://github.com/Orange-OpenSource/hurl/releases/download/7.1.0/hurl_7.1.0_amd64.deb /tmp/hurl.deb
+        RUN apt-get update && apt-get install -y /tmp/hurl.deb
+        WORKDIR /app
+    command:
+      - hurl
+      - --test
+      - --variable
+      - base_url=app:3000
+      - tests/
+    volumes:
+      - ./tests:/app/tests:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - testnet
+
+networks:
+  testnet: {}

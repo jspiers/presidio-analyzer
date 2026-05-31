@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   docker-image:
-    uses: cusk-io/.github/.github/workflows/docker-build-push.yml@test-docker-build-push
+    uses: cusk-io/.github/.github/workflows/docker-build-push.yml@v0.0.1
     with:
       image_name: ghcr.io/cusk-io/presidio-analyzer
       timeout_minutes: 2
